@@ -1,12 +1,23 @@
 #include "fsock.hpp"
 
-int main()
+int main(int argc, char** argv)
 {
-	fsock::server server(3000);
+	if (argc != 2) {
+		return -1;
+	}
 
-	auto client = server.get_client();
+	if (argv[1][0] == 's') {
+		fsock::server server(3000);
 
-	client << "Hello, world!" << "\n";
-	std::cout << client << std::endl;
+		auto client = server.accept();
+
+		client << "Hello, world!\n";
+		std::cout << client << std::flush;
+	} else if (argv[1][0] == 'c') {
+		fsock::client c("127.0.0.1", 3000);
+
+		c << "Hello, world!\n";
+		std::cout << c << std::flush;
+	}
 }
 
