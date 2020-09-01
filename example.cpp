@@ -11,9 +11,10 @@ int main(int argc, char** argv)
 
 		auto client = server.accept();
 
-		client << "Hello, world!\n";
 		std::cout << client << std::flush;
-	} else if (argv[1][0] == 'c') {
+		client << "Hello, world!\n";
+	}
+	else if (argv[1][0] == 'c') {
 		fsock::client c("127.0.0.1", 3000);
 
 		c << "Hello, world!\n";

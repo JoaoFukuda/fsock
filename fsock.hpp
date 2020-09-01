@@ -86,7 +86,7 @@ namespace fsock {
 			send(sock, data.c_str(), data.size(), 0);
 		}
 
-		const connection & operator<<(const std::string & data) const
+		const connection & operator>>(const std::string & data) const
 		{
 			send_data(data);
 			return *this;
@@ -129,7 +129,7 @@ namespace fsock {
 			sock.connect_to(addr, port);
 		}
 
-		const connection & operator<<(const std::string & data) const
+		const connection & operator>>(const std::string & data) const
 		{
 			sock.send_data(data);
 			return sock;
