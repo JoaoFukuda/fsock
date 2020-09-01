@@ -86,17 +86,23 @@ namespace fsock {
 			send(sock, data.c_str(), data.size(), 0);
 		}
 
-		const connection & operator>>(const std::string & data) const
+		const std::string receive_data(int buf_size = 1024) const
+		{
+			char buf[buf_size]{0};
+			recv(sock, buf, buf_size - 1, 0);
+			return std::string(buf);
+		}
+
+		const connection & operator<<(const std::string & data) const
 		{
 			send_data(data);
 			return *this;
 		}
 
-		const std::string receive_data(int buf_size = 1024) const
+		const connection & operator>>(std::string & data) const
 		{
-			char buf[buf_size];
-			recv(sock, buf, buf_size - 1, 0);
-			return std::string(buf);
+			data = receive_data();
+			return *this;
 		}
 	};
 
@@ -129,15 +135,19 @@ namespace fsock {
 			sock.connect_to(addr, port);
 		}
 
-		const connection & operator>>(const std::string & data) const
-		{
-			sock.send_data(data);
-			return sock;
-		}
-
 		const std::string receive_data() const
 		{
 			return sock.receive_data();
+		}
+
+		const connection & operator<<(const std::string & data) const
+		{
+			return sock << data;
+		}
+
+		const connection & operator>>(std::string & data) const
+		{
+			return sock >> data;
 		}
 	};
 
