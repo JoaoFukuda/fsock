@@ -8,7 +8,7 @@ Main repository at [GitLab](https://gitlab.com/joao.fukuda/fsock)
 
 ## Using
 
-This uses `CMake >= 3.3` for compiling and installing the program.
+This uses `CMake >= 3.5` for compiling and installing the program.
 
 You have two methods:
 
