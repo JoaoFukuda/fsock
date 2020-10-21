@@ -1,9 +1,15 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <unistd.h>
+namespace cstd {
+	#include <arpa/inet.h>
+	#include <sys/socket.h>
+	#include <unistd.h>
+}
+
+using namespace cstd;
 
 namespace fsock {
 	enum class family {
@@ -31,79 +37,19 @@ namespace fsock {
 		family sock_family;
 
 	public:
-		connection(family f, protocol p)
-			: sock_family(f)
-		{
-			sock = socket(static_cast<int>(f), static_cast<int>(p), 0);
-		}
+		connection(family f, protocol p);
+		connection(int socket);
+		~connection();
 
-		connection(int socket)
-			: sock(socket)
-		{ }
+		void	set_option(layer l, option o, int v) const;
+		void	connect_to(const std::string & addr, const int port) const;
+		void	make_server(int port, int listeners = 5) const;
+		int	accept_connection() const;
+		void	send(const std::string & data) const;
+		const	std::string recv() const;
 
-		~connection()
-		{
-			close(sock);
-		}
-
-		void set_option(layer l, option o, int v) const
-		{
-			setsockopt(sock, static_cast<int>(l), static_cast<int>(o), &v, sizeof(v));
-		}
-
-		void connect_to(const std::string & addr, const int port) const
-		{
-			sockaddr_in host_info;
-			host_info.sin_family = static_cast<int>(sock_family);
-			host_info.sin_port = htons(port);
-			inet_pton(static_cast<int>(sock_family), addr.c_str(), &host_info.sin_addr);
-
-			connect(sock, reinterpret_cast<const sockaddr *>(&host_info), sizeof(host_info));
-		}
-
-		void make_server(int port, int listeners = 5) const
-		{
-			sockaddr_in host_info;
-			host_info.sin_family = static_cast<int>(sock_family);
-			host_info.sin_addr.s_addr = INADDR_ANY;
-			host_info.sin_port = htons(port);
-
-			bind(sock, reinterpret_cast<const sockaddr *>(&host_info), sizeof(host_info));
-
-			listen(sock, listeners);
-		}
-
-		int accept_connection() const
-		{
-			sockaddr_in client_info;
-			socklen_t client_len = sizeof(client_info);
-
-			return accept(sock, reinterpret_cast<sockaddr *>(&client_info), &client_len);
-		}
-
-		void send_data(const std::string & data) const
-		{
-			send(sock, data.c_str(), data.size(), 0);
-		}
-
-		const std::string receive_data(int buf_size = 1024) const
-		{
-			char buf[buf_size]{0};
-			recv(sock, buf, buf_size - 1, 0);
-			return std::string(buf);
-		}
-
-		const connection & operator<<(const std::string & data) const
-		{
-			send_data(data);
-			return *this;
-		}
-
-		const connection & operator>>(std::string & data) const
-		{
-			data = receive_data();
-			return *this;
-		}
+		const connection & operator<<(const std::string & data) const;
+		const connection & operator>>(std::string & data) const;
 	};
 
 	class server {
@@ -135,30 +81,37 @@ namespace fsock {
 			sock.connect_to(addr, port);
 		}
 
-		const std::string receive_data() const
+		void send(const std::string & data) const
 		{
-			return sock.receive_data();
+			sock.send(data);
 		}
 
-		const connection & operator<<(const std::string & data) const
+		const std::string recv() const
 		{
-			return sock << data;
+			return sock.recv();
 		}
 
-		const connection & operator>>(std::string & data) const
+		const client & operator<<(const std::string & data) const
 		{
-			return sock >> data;
+			sock << data;
+			return *this;
+		}
+
+		const client & operator>>(std::string & data) const
+		{
+			sock >> data;
+			return *this;
 		}
 	};
 
 	inline std::ostream & operator<<(std::ostream &out, const fsock::connection & conn)
 	{
-		return out << conn.receive_data();
+		return out << conn.recv();
 	}
 
 	inline std::ostream & operator<<(std::ostream &out, const fsock::client & client)
 	{
-		return out << client.receive_data();
+		return out << client.recv();
 	}
 }
 
