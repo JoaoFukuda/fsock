@@ -1,14 +1,15 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
+include(GNUInstallDirs)
 
-project(fsock)
+project(fsock LANGUAGES CXX)
 
-add_library(fsock fsock.cpp)
+add_library(fsock STATIC fsock.cpp)
 
 set_target_properties(fsock PROPERTIES PUBLIC_HEADER "fsock.hpp")
 
-install(TARGET
-	LIBRARY DESTINATION /usr/local/lib
-	PUBLIC_HEADER DESTINATION /usr/local/include
+install(TARGETS fsock
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 option(EXAMPLES OFF)
